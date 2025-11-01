@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Temporary files
+*.tmp
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+# ASP.NET Core secrets (contains passwords, keys)
+appsettings*.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
