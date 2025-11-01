@@ -1,8 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using UserService.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// Secret key for JWT (for demo, keep it in appsettings or environment variable)
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey))
+{
+    // For demo purposes only — in production, use environment variables
+    jwtKey = "ThisIsASuperSecretKeyWithAtLeast32Chars!";
+}
 // Register DbContext with MariaDB
 builder.Services.AddDbContext<UserContext>(options =>
     options.UseMySql(
@@ -11,10 +20,28 @@ builder.Services.AddDbContext<UserContext>(options =>
     )
 );
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
 // Add controllers (for future UsersController)
 builder.Services.AddControllers();
 
 var app = builder.Build();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Simple health check
 app.MapGet("/", () => "UserService running!");

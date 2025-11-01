@@ -4,11 +4,16 @@ using UserService.Data;
 using UserService.Models;
 using System.Security.Cryptography;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserService.Controllers
 {
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly UserContext _context;
@@ -24,6 +29,7 @@ namespace UserService.Controllers
             return await _context.Users.ToListAsync();
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(UserDto userDto)
         {
@@ -41,6 +47,37 @@ namespace UserService.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> Login(UserDto userDto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Username == userDto.Username
+            );
+
+            if (user == null || user.PasswordHash != HashPassword(userDto.Password))
+                return Unauthorized("Invalid Username or Password");
+
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes("ThisIsASuperSecretKeyWithAtLeast32Chars!");
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, user.Username)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var jwt = tokenHandler.WriteToken(token);
+
+            return Ok(jwt);
         }
 
         private string HashPassword(string password)
