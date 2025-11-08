@@ -38,21 +38,41 @@ builder.Services.AddAuthentication(options =>
 
 // Add controllers (for future UsersController)
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5161") // Your Blazor UI URL
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserService API V1");
+    c.RoutePrefix = "swagger";
+});
+
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Simple health check
-app.MapGet("/", () => "UserService running!");
 
-app.MapControllers();
 
 // Endpoint to list all users
 app.MapGet("/users", async (UserContext db) =>
 {
     var users = await db.Users.ToListAsync();
     return Results.Ok(users);
-});
+}).AllowAnonymous();
 
+app.MapControllers();
+
+app.MapGet("/", () => "UserService running!");
 app.Run();

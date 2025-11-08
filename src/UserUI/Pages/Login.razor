@@ -1,0 +1,58 @@
+@page "/"
+@using MudBlazor
+@using UserUI.Services
+@inject AuthService Auth
+@inject NavigationManager Navigation
+
+<MudPaper Class="pa-6 mx-auto mt-12" Elevation="4" Style="max-width:400px;">
+    <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudText Color="Color.Error" Class="mb-2">@errorMessage</MudText>
+    }
+
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudTextField @bind-Value="loginModel.Username" Label="Username" Required="true" Class="mb-3" Variant="Variant.Text"/>
+        <MudTextField @bind-Value="loginModel.Password" Label="Password" InputType="InputType.Password" Variant="Variant.Text" Required="true" Class="mb-3" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Type="Submit" Class="mb-2" FullWidth="true">
+            Login
+        </MudButton>
+
+        <MudText Align="Align.Center">
+            <MudLink Href="/register" Color="Color.Primary" Style="text-decoration:underline;">Register</MudLink>
+        </MudText>
+    </EditForm>
+</MudPaper>
+
+@code
+{
+    private LoginModel loginModel = new();
+    private string errorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var token = await Auth.LoginAsync(loginModel.Username, loginModel.Password);
+            if (!string.IsNullOrEmpty(token))
+                Navigation.NavigateTo("/users");
+            else
+                errorMessage = "Invalid username or password";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Login failed: {ex.Message}";
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}

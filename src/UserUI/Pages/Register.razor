@@ -1,0 +1,64 @@
+@page "/register"
+@using UserUI.Services
+@inject  AuthService Auth
+@inject  NavigationManager Navigation
+
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+<EditForm Model="registrationModel" OnValidSubmit="HandleRegistration">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="registrationModel.Username" />
+    </div>
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="registrationModel.Email" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="registrationModel.Password" type="password" />
+    </div>
+    <div style="margin-top:10px">
+        <button type="submit">Register</button>
+    </div>
+</EditForm>
+
+@code
+{
+    private RegistrationModel registrationModel = new ();
+    private string message = string.Empty;
+    public async Task HandleRegistration()
+    {
+        try
+        {
+            var register =  await Auth.RegisterAsync(registrationModel.Username, registrationModel.Email, registrationModel.Password);
+
+            if (register != null)
+            {
+                message = "Registration Successful";
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Registration Failed: {ex.Message}";
+            Console.WriteLine($"Registration Failed: {ex.Message}");
+        }
+        
+    }
+    
+    public class RegistrationModel
+    {
+        public string Username { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}
