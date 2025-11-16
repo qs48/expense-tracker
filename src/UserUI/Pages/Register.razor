@@ -1,34 +1,56 @@
 @page "/register"
+@using MudBlazor
 @using UserUI.Services
 @inject  AuthService Auth
 @inject  NavigationManager Navigation
 
 
-@if (!string.IsNullOrEmpty(message))
-{
-    <p>@message</p>
-}
 
-<EditForm Model="registrationModel" OnValidSubmit="HandleRegistration">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<MudPaper Class="pa-6 mx-auto mt-12" Elevation="4" Style="max-width:400px;">
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <MudText>@message</MudText>
+    }
+    <EditForm Model="registrationModel" OnValidSubmit="HandleRegistration">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
 
-    <div>
-        <label>Username:</label>
-        <InputText @bind-Value="registrationModel.Username" />
-    </div>
-    <div>
-        <label>Email:</label>
-        <InputText @bind-Value="registrationModel.Email" />
-    </div>
-    <div>
-        <label>Password:</label>
-        <InputText @bind-Value="registrationModel.Password" type="password" />
-    </div>
-    <div style="margin-top:10px">
-        <button type="submit">Register</button>
-    </div>
-</EditForm>
+        
+        <MudTextField 
+            Label="Username" 
+            Required="true" 
+            @bind-Value="registrationModel.Username" 
+            Class="mb-2 compact-input"
+            Variant="Variant.Outlined"/>
+    
+        <MudTextField 
+            Label="Email" 
+            Required="true" 
+            @bind-Value="registrationModel.Email" 
+            Class="mb-2 compact-input"
+            Variant="Variant.Outlined"/>
+
+        <MudTextField 
+            Label="Password" 
+            Required="true" 
+            InputType="InputType.Password" 
+            @bind-Value="registrationModel.Password" 
+            Class="mb-2 compact-input"
+            Variant="Variant.Outlined"/>
+
+        
+        <MudButton
+            Align
+            EndIcon="@Icons.Material.Filled.Login"
+            ButtonType="ButtonType.Submit"
+            Variant="Variant.Filled"
+            FullWidth="true"
+            Color="Color.Primary">
+                Register
+        </MudButton>
+    </EditForm>
+</MudPaper>
+
 
 @code
 {
