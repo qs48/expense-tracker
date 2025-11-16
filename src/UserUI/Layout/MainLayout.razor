@@ -1,0 +1,11 @@
+﻿@using MudBlazor
+@inherits LayoutComponentBase
+@inject MudTheme Theme
+<div style="height: 100vh">
+    <MudThemeProvider IsDarkMode="false" Theme="@Theme" />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+    
+    @Body
+
+</div>
